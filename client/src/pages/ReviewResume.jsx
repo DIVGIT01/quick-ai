@@ -6,8 +6,18 @@ import { useApi, apiErrorMessage } from '../hooks/useApi'
 import ResultPanel from '../components/ResultPanel'
 
 const FILE_TYPES = {
-  pdf: { label: 'PDF', accept: 'application/pdf' },
-  jpg: { label: 'JPG', accept: 'image/jpeg' },
+  pdf: {
+    label: 'PDF',
+    accept: ['application/pdf'],
+    noun: 'a PDF file',
+    hint: 'Supports PDF resumes (up to 5 MB)',
+  },
+  image: {
+    label: 'Image (JPG or PNG)',
+    accept: ['image/jpeg', 'image/png'],
+    noun: 'a JPG or PNG image',
+    hint: 'Supports JPG and PNG resumes (up to 5 MB). Use a clear, sharp image.',
+  },
 }
 
 const ReviewResume = () => {
@@ -17,15 +27,16 @@ const ReviewResume = () => {
   const [content, setContent] = useState('')
 
   const api = useApi()
+  const current = FILE_TYPES[fileType]
 
   const onSubmitHandler = async (e) => {
     e.preventDefault()
     if (loading) return
     if (!input) {
-      return toast.error(`Please choose a ${FILE_TYPES[fileType].label} resume first.`)
+      return toast.error(`Please choose ${current.noun} first.`)
     }
-    if (input.type !== FILE_TYPES[fileType].accept) {
-      return toast.error(`Please upload a ${FILE_TYPES[fileType].label} file.`)
+    if (!current.accept.includes(input.type)) {
+      return toast.error(`Please upload ${current.noun}.`)
     }
     try {
       setLoading(true)
@@ -68,14 +79,12 @@ const ReviewResume = () => {
           key={fileType} // remounts the input so the old file is cleared
           onChange={(e) => setInput(e.target.files[0])}
           type="file"
-          accept={FILE_TYPES[fileType].accept}
+          accept={current.accept.join(',')}
           className='w-full p-2 px-3 mt-2 outline-none text-sm rounded-md border border-gray-300 text-gray-600'
           required
         />
 
-        <p className='text-xs text-gray-500 font-light mt-1'>
-          Supports {FILE_TYPES[fileType].label} resumes only (up to 5 MB)
-        </p>
+        <p className='text-xs text-gray-500 font-light mt-1'>{current.hint}</p>
 
         <button disabled={loading} className='w-full flex justify-center items-center gap-2 bg-gradient-to-r from-[#00DA83] to-[#009BB3] text-white px-4 py-2 mt-6 text-sm rounded-lg cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'>
           {loading

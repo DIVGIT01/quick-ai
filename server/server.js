@@ -8,9 +8,11 @@ import aiRouter from './routes/aiRoutes.js'
 import userRouter from './routes/userRoutes.js'
 import { errorHandler, notFound } from './middlewares/errorHandler.js'
 
+
 assertRequiredEnv()
 
 const app = express()
+
 
 app.use(
   cors({

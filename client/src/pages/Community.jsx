@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { Heart, Loader2 } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import { useApi, apiErrorMessage } from '../hooks/useApi'
+import { AiSpinner } from '../components/ResultPanel'
 
 const Community = () => {
 
@@ -46,14 +47,14 @@ const Community = () => {
   if (loading) {
     return (
       <div className='flex-1 h-full flex justify-center items-center'>
-        <Loader2 className='w-10 h-10 text-primary animate-spin' />
+        <AiSpinner size={64} label='Loading community...' />
       </div>
     )
   }
 
   return (
     <div className='flex-1 h-full flex flex-col gap-4 p-6'>
-      Creations
+      <h1 className='text-xl font-semibold text-slate-700'>Creations</h1>
       <div className='bg-white h-full w-full rounded-xl overflow-y-scroll'>
         {creations.length === 0 ? (
           <p className='p-6 text-sm text-gray-500'>

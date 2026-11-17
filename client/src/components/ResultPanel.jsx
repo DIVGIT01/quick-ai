@@ -1,5 +1,40 @@
 import Markdown from 'react-markdown'
-import { Download, Loader2 } from 'lucide-react'
+import { Download, Sparkles } from 'lucide-react'
+
+/**
+ * Brand-colored loading ring (blue to purple, with a glow and a sparkle).
+ * Exported so other pages can show the same loader.
+ */
+export const AiSpinner = ({ size = 56, label }) => {
+  const ring = Math.max(3, Math.round(size / 12)) // ring thickness in px
+  const mask = `radial-gradient(farthest-side, transparent calc(100% - ${ring + 1}px), #000 calc(100% - ${ring}px))`
+
+  return (
+    <div role="status" aria-live="polite" className="flex flex-col items-center gap-4">
+      <div className="relative" style={{ width: size, height: size }}>
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#3C81F6] to-[#8E37EB] opacity-30 blur-md animate-pulse" />
+
+        <div
+          className="absolute inset-0 rounded-full animate-spin"
+          style={{
+            background:
+              'conic-gradient(from 0deg, rgba(60,129,246,0), #3C81F6 40%, #8E37EB 75%, #C341F6)',
+            WebkitMask: mask,
+            mask,
+          }}
+        />
+
+        <Sparkles
+          className="absolute inset-0 m-auto text-[#8E37EB] animate-pulse"
+          size={Math.round(size * 0.35)}
+        />
+      </div>
+
+      {label && <p className="text-sm text-gray-500">{label}</p>}
+      <span className="sr-only">Loading</span>
+    </div>
+  )
+}
 
 /**
  * The right-hand output column shared by every AI tool page.
@@ -17,6 +52,7 @@ const ResultPanel = ({
   content = '',
   emptyText,
   variant = 'markdown',
+  loadingText = 'Working on it...',
   className = '',
 }) => {
   return (
@@ -45,10 +81,7 @@ const ResultPanel = ({
 
       {loading ? (
         <div className="flex-1 flex justify-center items-center">
-          <div className="text-sm flex flex-col items-center gap-5 text-gray-400">
-            <Loader2 className="w-9 h-9 animate-spin" />
-            <p>Working on it...</p>
-          </div>
+          <AiSpinner size={64} label={loadingText} />
         </div>
       ) : !content ? (
         <div className="flex-1 flex justify-center items-center">

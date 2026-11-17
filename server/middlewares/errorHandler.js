@@ -11,7 +11,8 @@ export const notFound = (req, res) => {
  *
  * Client-caused problems get a useful message; anything else is logged
  * server-side and reported generically so provider errors and stack traces
- * never leak to the browser.
+ * never leak to the browser. Errors we raise ourselves with `expose: true`
+ * carry a message that is safe to show.
  */
 // eslint-disable-next-line no-unused-vars -- Express needs the 4-arg signature
 export const errorHandler = (error, req, res, next) => {
@@ -31,7 +32,7 @@ export const errorHandler = (error, req, res, next) => {
   }
 
   const safeMessage =
-    status < 500
+    status < 500 || error.expose
       ? error.message
       : 'Something went wrong while processing that request.'
 
