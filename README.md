@@ -1,4 +1,4 @@
-# ai-forge
+# Quick AI
 
 Full Stack AI SaaS Platform built with the PERN stack.
 
@@ -6,6 +6,33 @@ A set of AI content tools behind a subscription: write articles, generate blog
 titles and images, remove image backgrounds and objects, and get a resume
 reviewed. Everything a user creates is saved, and generated images can be
 published to a shared community feed.
+
+## Live Demo
+
+- **App:** https://quick-ai-2u5h.vercel.app
+
+Sign up with Google or email to try the app. Write Article and Blog Titles
+work on a free account. Generate Images, Remove Background, Remove Object and
+Review Resume need the **Premium** plan, because each call uses a paid
+third-party API.
+
+## Screenshots
+
+| Home | Features |
+| :---: | :---: |
+| ![Home](docs/screenshots/home.png) | ![Features](docs/screenshots/features.png) |
+
+| Dashboard | Write Article |
+| :---: | :---: |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Write Article](docs/screenshots/write-article.png) |
+
+| Generate Images | Remove Background |
+| :---: | :---: |
+| ![Generate Images](docs/screenshots/generate-images.png) | ![Remove Background](docs/screenshots/remove-background.png) |
+
+| Review Resume | Footer |
+| :---: | :---: |
+| ![Review Resume](docs/screenshots/review-resume.png) | ![Footer](docs/screenshots/footer.png) |
 
 ## Stack
 
@@ -17,16 +44,21 @@ published to a shared community feed.
 | Auth     | Clerk (sessions, user profile, Billing / plan gating)      |
 | Text AI  | Google Gemini via its OpenAI-compatible endpoint           |
 | Images   | ClipDrop (text-to-image), Cloudinary (hosting + AI edits)  |
+| Hosting  | Vercel (frontend and backend as separate projects)         |
 
 ## Features
 
-- **Write Article** - long-form Markdown article from a topic and target length.
+- **Write Article** - long-form Markdown article from a topic and a target
+  length (Short, Medium or Long).
 - **Blog Titles** - ten title ideas for a keyword and category.
-- **Generate Images** - text-to-image with style presets, optionally published
-  to the community feed.
+- **Generate Images** - text-to-image with eight style presets (Realistic,
+  Ghibli, Anime, Cartoon, Fantasy, Watercolour, 3D, Portrait), optionally
+  published to the community feed.
 - **Remove Background** - AI background removal on an uploaded image.
 - **Remove Object** - describe one object and have it generatively removed.
-- **Review Resume** - parses an uploaded PDF and returns structured feedback.
+- **Review Resume** - upload a PDF, JPG or PNG resume and get structured
+  feedback: overall impression, strengths, weaknesses, missing keywords and
+  concrete improvements.
 - **Dashboard** - every creation you have made, with publish and delete
   controls, plus your plan and remaining free usage.
 - **Community** - published images from all users, with likes.
@@ -34,6 +66,15 @@ published to a shared community feed.
 Free accounts get a metered allowance of the text tools
 (`FREE_USAGE_LIMIT`, default 10). The image and resume tools are Premium-only
 because each call hits a paid third-party API.
+
+## How it works
+
+```
+User -> React app -> Clerk session -> Express API
+     -> auth + plan check (free allowance or Premium)
+     -> Gemini / ClipDrop / Cloudinary
+     -> result saved in Neon Postgres -> JSON response -> React renders it
+```
 
 ## Project layout
 
@@ -49,6 +90,7 @@ server/
   controllers/          aiController, userController
   routes/               aiRoutes, userRoutes
   db/                   schema.sql and the idempotent boot migration
+docs/screenshots/       Images used in this README
 ```
 
 ## Getting started
@@ -60,14 +102,15 @@ All of these have a free tier:
 - [Neon](https://neon.tech) - Postgres connection string
 - [Clerk](https://dashboard.clerk.com) - publishable + secret key
 - [Google AI Studio](https://aistudio.google.com/apikey) - Gemini API key
-- [ClipDrop](https://clipdrop.co/apis) - text-to-image API key
+- [ClipDrop](https://clipdrop.co/apis) - text-to-image API key (claim the free
+  credits on your account page first)
 - [Cloudinary](https://console.cloudinary.com) - cloud name, key, secret
 
 ### 2. Install
 
 ```bash
-git clone https://github.com/DIVGIT01/ai-forge.git
-cd ai-forge
+git clone https://github.com/DIVGIT01/quick-ai.git
+cd quick-ai
 npm run install:all
 ```
 
@@ -120,36 +163,53 @@ Every route requires a valid Clerk session token in the
 `Authorization: Bearer <token>` header. `src/hooks/useApi.js` does this for the
 frontend. Unauthenticated requests get `401`.
 
-| Method   | Route                                | Plan    | Purpose                            |
-| -------- | ------------------------------------ | ------- | ---------------------------------- |
-| `GET`    | `/`                                  | public  | Health check + configured features |
-| `POST`   | `/api/ai/generate-article`           | metered | Markdown article                   |
-| `POST`   | `/api/ai/generate-blog-title`        | metered | Title ideas                        |
-| `POST`   | `/api/ai/generate-image`             | premium | Text-to-image                      |
-| `POST`   | `/api/ai/remove-image-background`    | premium | Background removal                 |
-| `POST`   | `/api/ai/remove-image-object`        | premium | Generative object removal          |
-| `POST`   | `/api/ai/resume-review`              | premium | PDF resume feedback                |
-| `GET`    | `/api/user/usage`                    | any     | Plan, free usage, totals           |
-| `GET`    | `/api/user/get-user-creations`       | any     | Your creations                     |
-| `GET`    | `/api/user/get-published-creations`  | any     | Community feed                     |
-| `POST`   | `/api/user/toggle-like-creation`     | any     | Like / unlike                      |
-| `POST`   | `/api/user/toggle-publish-creation`  | any     | Publish / unpublish your creation  |
-| `DELETE` | `/api/user/creations/:id`            | any     | Delete your creation               |
+| Method   | Route                                | Plan    | Purpose                                |
+| -------- | ------------------------------------ | ------- | -------------------------------------- |
+| `GET`    | `/`                                  | public  | Health check + configured features     |
+| `POST`   | `/api/ai/generate-article`           | metered | Markdown article                       |
+| `POST`   | `/api/ai/generate-blog-title`        | metered | Title ideas                            |
+| `POST`   | `/api/ai/generate-image`             | premium | Text-to-image                          |
+| `POST`   | `/api/ai/remove-image-background`    | premium | Background removal                     |
+| `POST`   | `/api/ai/remove-image-object`        | premium | Generative object removal              |
+| `POST`   | `/api/ai/resume-review`              | premium | PDF / JPG / PNG resume feedback        |
+| `GET`    | `/api/user/usage`                    | any     | Plan, free usage, totals               |
+| `GET`    | `/api/user/get-user-creations`       | any     | Your creations                         |
+| `GET`    | `/api/user/get-published-creations`  | any     | Community feed                         |
+| `POST`   | `/api/user/toggle-like-creation`     | any     | Like / unlike                          |
+| `POST`   | `/api/user/toggle-publish-creation`  | any     | Publish / unpublish your creation      |
+| `DELETE` | `/api/user/creations/:id`            | any     | Delete your creation                   |
 
 File uploads are `multipart/form-data`: field `image` for the two image
-editors (JPEG/PNG/WebP, 10 MB max) and `resume` for the reviewer (PDF, 5 MB
-max). Everything else is JSON.
+editors (JPEG/PNG/WebP, 10 MB max) and `resume` for the reviewer (PDF, JPG or
+PNG, 5 MB max). Everything else is JSON.
 
 ## Deploying
 
-The two halves deploy independently.
+The two halves deploy independently. The live app runs on Vercel as two
+separate projects.
 
-- **client** - `npm run build` and serve `client/dist` as a static site. Set
-  `VITE_BASE_URL` to the deployed API origin at build time.
-- **server** - any Node host. Set `HOST=0.0.0.0` *only* when the platform
-  terminates TLS and routes to your container, set `ALLOWED_ORIGINS` to the
-  deployed frontend origin, and set `NODE_ENV=production` so internal error
-  details stop being returned.
+- **client** - build with `npm run build` and serve `client/dist` as a static
+  site. Set `VITE_BASE_URL` to the deployed API origin at build time. Because
+  the app is a single-page app, `client/vercel.json` rewrites every route to
+  `index.html` so deep links like `/ai/write-article` still load:
+
+  ```json
+  { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
+  ```
+
+- **server** - set every variable from `server/.env.example` in the host's
+  environment settings (`.env` files are not uploaded). Set `ALLOWED_ORIGINS`
+  to the deployed frontend origin (comma-separate several; no trailing slash)
+  and `NODE_ENV=production` so internal error details stop being returned.
+  Set `HOST=0.0.0.0` *only* when the platform terminates TLS and routes to
+  your container. Redeploy after changing any variable.
+
+## Team
+
+- **Divya Prakash Tiwari** - React frontend, UI/UX design, Community feed, system architecture, deployment
+- **Astha Negi** - Express backend, Gemini
+  integration, subscription logic 
+
 
 ## License
 
